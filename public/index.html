@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Era · Expense Tracker</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222e;
+      --border: #2e2e3e;
+      --accent: #7c6ef7;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --red: #f87171;
+      --text: #e2e2f0;
+      --muted: #8888aa;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 24px 28px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header h1 span { color: var(--accent2); }
+
+    .month-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .month-picker input[type="month"] {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 0;
+      height: calc(100vh - 73px);
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .main {
+      padding: 20px 24px;
+      overflow-y: auto;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .stat-value { font-size: 26px; font-weight: 700; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.accent { color: var(--accent2); }
+
+    /* Summary bars */
+    .category-bar { margin-bottom: 10px; }
+    .category-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+    .category-bar-header span:last-child { color: var(--muted); }
+    .bar-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    /* Categories management */
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .tag {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 0;
+    }
+    .tag button:hover { color: var(--red); }
+
+    .add-row {
+      display: flex;
+      gap: 8px;
+    }
+    .add-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 13px;
+      outline: none;
+    }
+    .add-row input:focus { border-color: var(--accent); }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--accent2); }
+    .btn.ghost {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .btn.ghost:hover { background: var(--border); }
+    .btn.danger { background: #7f1d1d; color: var(--red); }
+    .btn.danger:hover { background: #991b1b; }
+
+    /* Expense list */
+    .expense-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .expense-item:last-child { border-bottom: none; }
+
+    .expense-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .expense-info { flex: 1; min-width: 0; }
+    .expense-category { font-size: 14px; font-weight: 600; }
+    .expense-meta { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .expense-amount { font-size: 16px; font-weight: 700; color: var(--red); flex-shrink: 0; }
+    .expense-delete {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .expense-delete:hover { color: var(--red); background: #7f1d1d33; }
+
+    /* Add expense modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      display: none;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 360px;
+      max-width: 90vw;
+    }
+    .modal h2 { font-size: 17px; margin-bottom: 18px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--surface2); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+    /* Shortcut panel */
+    .shortcut-panel { background: var(--surface2); border-radius: 10px; padding: 14px; }
+    .shortcut-panel p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .shortcut-panel code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: var(--accent2);
+      display: block;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+    .step { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .step-num {
+      width: 22px; height: 22px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .empty { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-header h2 { font-size: 16px; font-weight: 700; }
+
+    @media (max-width: 700px) {
+      .layout { grid-template-columns: 1fr; height: auto; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>New Era <span>Expenses</span></h1>
+  <div class="month-picker">
+    <input type="month" id="monthFilter" />
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <!-- Summary by category -->
+    <div class="card">
+      <div class="card-title">By Category</div>
+      <div id="summaryBars"><div class="empty">No data</div></div>
+    </div>
+
+    <!-- Categories -->
+    <div class="card">
+      <div class="card-title">Categories</div>
+      <div class="tag-list" id="tagList"></div>
+      <div class="add-row">
+        <input type="text" id="newCategoryInput" placeholder="New category…" maxlength="40" />
+        <button class="btn" onclick="addCategory()">Add</button>
+      </div>
+    </div>
+
+    <!-- iPhone Shortcut Setup -->
+    <div class="card">
+      <div class="card-title">iPhone Shortcut Setup</div>
+      <div class="step"><div class="step-num">1</div><div>Open the <strong>Shortcuts</strong> app and tap <strong>+</strong> to create a new shortcut.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Add <strong>"Ask for Input"</strong> → set prompt to <em>"Amount paid?"</em>, type <strong>Number</strong>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Add <strong>"Get Contents of URL"</strong>:<br/>URL: <code id="categoriesUrl"></code>Method: GET. Save result as <em>CategoriesResult</em>.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Add <strong>"Get Dictionary Value"</strong> → Key: <em>categories</em> from <em>CategoriesResult</em>. Save as <em>CatList</em>.</div></div>
+      <div class="step"><div class="step-num">5</div><div>Add <strong>"Choose from List"</strong> → Input: <em>CatList</em>. Prompt: <em>"Select category"</em>.</div></div>
+      <div class="step"><div class="step-num">6</div><div>Add <strong>"Ask for Input"</strong> → prompt <em>"Merchant / Note (optional)"</em>, type Text.</div></div>
+      <div class="step"><div class="step-num">7</div><div>Add <strong>"Get Contents of URL"</strong>:<br/>URL: <code id="expensesUrl"></code>Method: POST, Body: JSON with keys <em>amount</em>, <em>category</em>, <em>note</em>.</div></div>
+      <div class="step"><div class="step-num">8</div><div>Add <strong>"Show Notification"</strong> → <em>"Expense logged! 💸"</em></div></div>
+      <div class="step"><div class="step-num">9</div><div>Go to <strong>Automation</strong> tab → <strong>+</strong> → <strong>Transaction</strong> (or app trigger) to auto-run when you pay.</div></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Spent</div>
+        <div class="stat-value red" id="totalSpent">$0.00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Transactions</div>
+        <div class="stat-value accent" id="txCount">0</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2>Recent Expenses</h2>
+      <button class="btn" onclick="openModal()">+ Add Manual</button>
+    </div>
+
+    <div class="card" style="padding: 0 18px;">
+      <div id="expenseList"><div class="empty">No expenses yet. Pay something and log it via the Shortcut!</div></div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Add Expense</h2>
+    <div class="form-group">
+      <label>Amount ($)</label>
+      <input type="number" id="fAmount" placeholder="0.00" step="0.01" min="0" />
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="fCategory"></select>
+    </div>
+    <div class="form-group">
+      <label>Merchant / Note</label>
+      <input type="text" id="fNote" placeholder="e.g. Starbucks, groceries…" />
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="fDate" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="submitExpense()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+const CATEGORY_ICONS = {
+  "Food & Dining": "🍽️",
+  "Transport": "🚗",
+  "Shopping": "🛍️",
+  "Entertainment": "🎬",
+  "Health & Fitness": "💪",
+  "Bills & Utilities": "💡",
+  "Travel": "✈️",
+  "Groceries": "🛒",
+  "Coffee & Drinks": "☕",
+  "Other": "📦"
+};
+
+function icon(cat) {
+  return CATEGORY_ICONS[cat] || "💳";
+}
+
+// Fill in Shortcut URL hints
+const base = window.location.origin;
+document.getElementById('categoriesUrl').textContent = base + '/api/categories';
+document.getElementById('expensesUrl').textContent = base + '/api/expenses';
+
+// Month filter
+const monthInput = document.getElementById('monthFilter');
+const now = new Date();
+monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+monthInput.addEventListener('change', loadAll);
+
+// ── Data loaders ─────────────────────────────────────────────────────────
+
+async function loadAll() {
+  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
+}
+
+async function loadExpenses() {
+  const month = monthInput.value;
+  const url = month ? `${API}/api/expenses?month=${month}` : `${API}/api/expenses`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  document.getElementById('totalSpent').textContent = '$' + (data.total || 0).toFixed(2);
+  document.getElementById('txCount').textContent = data.count || 0;
+
+  const list = document.getElementById('expenseList');
+  if (!data.expenses || data.expenses.length === 0) {
+    list.innerHTML = '<div class="empty">No expenses yet. Pay something and log it via the Shortcut!</div>';
+    return;
+  }
+
+  list.innerHTML = data.expenses.map(e => `
+    <div class="expense-item">
+      <div class="expense-icon">${icon(e.category)}</div>
+      <div class="expense-info">
+        <div class="expense-category">${e.category}</div>
+        <div class="expense-meta">${[e.merchant || e.note, e.date].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="expense-amount">-$${e.amount.toFixed(2)}</div>
+      <button class="expense-delete" onclick="deleteExpense('${e.id}')" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+async function loadSummary() {
+  const month = monthInput.value;
+  const url = month ? `${API}/api/summary?month=${month}` : `${API}/api/summary`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const bars = document.getElementById('summaryBars');
+  const entries = Object.entries(data.summary || {}).sort((a,b) => b[1]-a[1]);
+  if (entries.length === 0) {
+    bars.innerHTML = '<div class="empty">No data</div>';
+    return;
+  }
+  const max = entries[0][1];
+  bars.innerHTML = entries.map(([cat, amt]) => `
+    <div class="category-bar">
+      <div class="category-bar-header">
+        <span>${icon(cat)} ${cat}</span>
+        <span>$${amt.toFixed(2)}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${(amt/max*100).toFixed(1)}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadCategories() {
+  const res = await fetch(`${API}/api/categories`);
+  const data = await res.json();
+  const cats = data.categories || [];
+
+  // Tag list in sidebar
+  document.getElementById('tagList').innerHTML = cats.map(c => `
+    <div class="tag">${icon(c)} ${c}
+      <button onclick="deleteCategory('${encodeURIComponent(c)}')" title="Remove">×</button>
+    </div>
+  `).join('');
+
+  // Modal select
+  const sel = document.getElementById('fCategory');
+  sel.innerHTML = cats.map(c => `<option value="${c}">${icon(c)} ${c}</option>`).join('');
+}
+
+// ── Actions ──────────────────────────────────────────────────────────────
+
+async function addCategory() {
+  const input = document.getElementById('newCategoryInput');
+  const name = input.value.trim();
+  if (!name) return;
+  await fetch(`${API}/api/categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  input.value = '';
+  await loadCategories();
+}
+
+async function deleteCategory(encoded) {
+  if (!confirm('Remove this category?')) return;
+  await fetch(`${API}/api/categories/${encoded}`, { method: 'DELETE' });
+  await loadCategories();
+}
+
+async function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  await fetch(`${API}/api/expenses/${id}`, { method: 'DELETE' });
+  await loadAll();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+
+function openModal() {
+  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fAmount').value = '';
+  document.getElementById('fNote').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function submitExpense() {
+  const amount = document.getElementById('fAmount').value;
+  const category = document.getElementById('fCategory').value;
+  const note = document.getElementById('fNote').value;
+  const date = document.getElementById('fDate').value;
+  if (!amount || !category) return alert('Amount and category are required.');
+  const res = await fetch(`${API}/api/expenses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, category, note, date })
+  });
+  if (res.ok) { closeModal(); await loadAll(); }
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+document.getElementById('newCategoryInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addCategory();
+});
+
+// Initial load
+loadAll();
+</script>
+</body>
+</html>
