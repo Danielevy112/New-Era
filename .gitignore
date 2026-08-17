@@ -1,1 +1,40 @@
+# ── Safety net: never let secrets or client data get staged/committed ──
+# macOS
 .DS_Store
+**/.DS_Store
+
+# Secrets / environment (NEVER commit these)
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/.env
+**/.env.local
+**/.env.*.local
+*.pem
+*.key
+secrets.*
+credentials*.json
+service-account*.json
+
+# Local Claude config (may contain local paths/tokens)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Dependencies / build output
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+dist/
+build/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Client / runtime data & logs
+*.log
+*.sqlite
+*.sqlite3
+**/data/raw/
+variant-qa/data/
